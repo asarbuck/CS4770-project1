@@ -11,6 +11,21 @@ jobs:
     steps:    
       - name: Checkout repository
         uses: actions/checkout@v4
+    
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Sampler dependencies
+        working-directory: ./sampler
+        run: npm install
+
+      - name: Start sampler
+        working-directory: ./sampler
+        run: |
+          node server.Js
+          sleep 3
       
       - name: Build Docker image
         run: docker build -t java-docker-demo .
