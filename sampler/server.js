@@ -47,7 +47,7 @@ app.post("/sample", (req, res) => {
     console.log("Body received:", req.body);      // ← add this
     console.log("Content-Type:", req.headers["content-type"]); // ← and this
 
-    if (!checkCircuit){
+    if (!checkCircuit()){
         return res.status(503).json({
             error: "Circuit OPEN — sensor unavailable, retrying in 3 seconds"
         });
