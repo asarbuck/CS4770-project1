@@ -1,5 +1,5 @@
 let readingCount = 0;
-const SAMPLE_RATE = 2;
+let SAMPLE_RATE = 2;
 let lastReadingTime = Date.now();
 
 const IDLE_THRESHOLD_MS = 3000;
