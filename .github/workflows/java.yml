@@ -12,7 +12,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── Start Transformer first ──────────────────────────────────
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -29,7 +28,6 @@ jobs:
           sleep 3
           echo "Transformer started"
 
-      # ── Start Sampler second ─────────────────────────────────────
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -45,8 +43,7 @@ jobs:
           node server.js &
           sleep 3
           echo "Sampler started"
-          
-      # ── Run Sensor last ──────────────────────────────────────────
+
       - name: Build Docker image
         run: docker build -t java-docker-demo .
 
@@ -58,8 +55,7 @@ jobs:
             -e SAMPLER_URL=http://host.docker.internal:3000/sample \
             java-docker-demo
 
-
-   sampler-tests:
+  sampler-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -75,13 +71,13 @@ jobs:
         working-directory: ./sampler
         run: npm install
 
-      - name: Run unit test
+      - name: Run unit tests
         working-directory: ./sampler
         run: npm test
 
-      - name: Report successs
+      - name: Report success
         if: success()
-        run: echo "Sampler test passed successfully"
+        run: echo "Sampler tests passed"
 
       - name: Report failure
         if: failure()
@@ -113,5 +109,4 @@ jobs:
 
       - name: Report failure
         if: failure()
-        run: echo "Transformer tests failed"     
-       
+        run: echo "Transformer tests failed"
