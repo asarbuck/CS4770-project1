@@ -8,10 +8,28 @@ jobs:
   build-with-docker:
     runs-on: ubuntu-latest
     
-    steps:    
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-    
+
+      # ── Start Transformer first ──────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Transformer dependencies
+        working-directory: ./transformer
+        run: pip install flask pytest
+
+      - name: Start Transformer in background
+        working-directory: ./transformer
+        run: |
+          python app.py &
+          sleep 3
+          echo "Transformer started"
+
+      # ── Start Sampler second ─────────────────────────────────────
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -21,19 +39,27 @@ jobs:
         working-directory: ./sampler
         run: npm install
 
-      - name: Start sampler
+      - name: Start Sampler in background
         working-directory: ./sampler
         run: |
           node server.js &
           sleep 3
-      
+          echo "Sampler started"
+          
+      # ── Run Sensor last ──────────────────────────────────────────
       - name: Build Docker image
         run: docker build -t java-docker-demo .
-        
-      - name: Run Docker container
-        run: docker run java-docker-demo
 
-  sampler-build-and-test:
+      - name: Run Docker container
+        run: |
+          HOST_IP=$(ip route show default | awk '/default/ {print $3}')
+          echo "Host IP: $HOST_IP"
+          docker run --add-host=host.docker.internal:$HOST_IP \
+            -e SAMPLER_URL=http://host.docker.internal:3000/sample \
+            java-docker-demo
+
+
+   sampler-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -60,4 +86,32 @@ jobs:
       - name: Report failure
         if: failure()
         run: echo "Sampler tests failed"
+
+  transformer-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: ./transformer
+        run: pip install flask pytest
+
+      - name: Run unit tests
+        working-directory: ./transformer
+        run: pytest tests/
+
+      - name: Report success
+        if: success()
+        run: echo "Transformer tests passed"
+
+      - name: Report failure
+        if: failure()
+        run: echo "Transformer tests failed"     
        
