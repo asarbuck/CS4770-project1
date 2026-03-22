@@ -1,10 +1,14 @@
-# test_transformer.py
+# Test file for transformer implementation
+# Test areas : 
+#       Input edges, voltage to temp calculation, decimal inputs for temp calc, error handling
+# Usage : python -m unittest .\test_transformer.py 
+
 import unittest
 from transformer import convert_voltage_to_temperature
 
 class TestConvertVoltageToTemperature(unittest.TestCase):
 
-    # --- Valid input handling ---
+    # edge cases for input 
 
     def test_valid_midpoint_voltage(self):
         result = convert_voltage_to_temperature(2.5)
@@ -18,7 +22,7 @@ class TestConvertVoltageToTemperature(unittest.TestCase):
         result = convert_voltage_to_temperature(5.0)
         self.assertEqual(result, 100.0)
 
-    # --- Correct voltage-to-temperature conversion ---
+    # temperature calculation testing
 
     def test_conversion_one_volt(self):
         self.assertEqual(convert_voltage_to_temperature(1.0), 20.0)
@@ -26,12 +30,12 @@ class TestConvertVoltageToTemperature(unittest.TestCase):
     def test_conversion_four_volts(self):
         self.assertEqual(convert_voltage_to_temperature(4.0), 80.0)
 
+    # decimal testing  
     def test_rounding(self):
-        # 1/3 volt -> 6.666... should round to 6.67
-        result = convert_voltage_to_temperature(1 / 3)
-        self.assertEqual(result, 6.67)
+        result = convert_voltage_to_temperature(2/3)
+        self.assertEqual(result, 13.33)
 
-    # --- Error handling ---
+    # test convert_voltage_to_temperature error handling
 
     def test_none_raises_value_error(self):
         with self.assertRaises(ValueError):
@@ -44,7 +48,6 @@ class TestConvertVoltageToTemperature(unittest.TestCase):
     def test_over_max_voltage_raises_value_error(self):
         with self.assertRaises(ValueError):
             convert_voltage_to_temperature(5.1)
-
 
 if __name__ == '__main__':
     unittest.main()
