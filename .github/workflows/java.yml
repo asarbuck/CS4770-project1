@@ -23,6 +23,8 @@ jobs:
             postgres:15-alpine
           echo "Waiting for PostgreSQL..."
           until docker exec temp_db pg_isready -U postgres; do sleep 2; done
+          echo "PostgreSQL server ready, waiting for init.sql..."
+          until docker exec temp_db psql -U postgres -d temperatures -c '\q' 2>/dev/null; do sleep 1; done
           echo "PostgreSQL ready"
 
       - name: Set up Node.js
@@ -37,7 +39,7 @@ jobs:
       - name: Start API in background
         working-directory: ./restAPI
         run: |
-          DB_HOST=localhost DB_PORT=5432 DB_NAME=temperatures \
+          PORT=4000 DB_HOST=localhost DB_PORT=5432 DB_NAME=temperatures \
           DB_USER=api_user DB_PASSWORD=secret \
           node index.js &
           sleep 3
@@ -84,7 +86,7 @@ jobs:
       - name: Integration test — POST and GET /temperature
         run: |
           # Store a reading via the transformer's conversion (2.5V → 50.0°C)
-          RESPONSE=$(curl -sf -X POST http://localhost:3000/temperature \
+          RESPONSE=$(curl -sf -X POST http://localhost:4000/temperature \
             -H "Content-Type: application/json" \
             -d '{"temperature": 50.0, "timestamp": "2026-03-10T14:20:00Z"}')
           echo "POST response: $RESPONSE"
@@ -93,7 +95,7 @@ jobs:
           echo "Stored with id=$ID"
 
           # Retrieve it back by ID
-          GET_RESPONSE=$(curl -sf http://localhost:3000/temperature/$ID)
+          GET_RESPONSE=$(curl -sf http://localhost:4000/temperature/$ID)
           echo "GET response: $GET_RESPONSE"
 
           echo "Integration test passed"
