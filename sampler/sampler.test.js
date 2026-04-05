@@ -1,4 +1,3 @@
-const { describe, it, beforeEach } = require("node:test");
 const assert = require("node:assert");
 
 // helper function to ensure sampler.js has clean state when testing different issues

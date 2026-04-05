@@ -31,11 +31,11 @@ jobs:
           node-version: '18'
 
       - name: Install API dependencies
-        working-directory: ./api
+        working-directory: ./restAPI
         run: npm install
 
       - name: Start API in background
-        working-directory: ./api
+        working-directory: ./restAPI
         run: |
           DB_HOST=localhost DB_PORT=5432 DB_NAME=temperatures \
           DB_USER=api_user DB_PASSWORD=secret \
