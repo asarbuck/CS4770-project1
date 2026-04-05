@@ -10,10 +10,12 @@ CREATE USER api_user WITH PASSWORD 'secret';
 GRANT CONNECT ON DATABASE temperatures TO api_user;
 GRANT USAGE ON SCHEMA public TO api_user;
 
--- The API creates the table itself on startup via initDB(),
--- but we grant future table permissions here so it works seamlessly.
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO api_user;
+-- Create the table as superuser so api_user does not need CREATE privilege
+CREATE TABLE IF NOT EXISTS temperature_readings (
+  id          SERIAL PRIMARY KEY,
+  temperature NUMERIC(6, 2) NOT NULL,
+  timestamp   TIMESTAMPTZ   NOT NULL
+);
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT USAGE, SELECT ON SEQUENCES TO api_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE temperature_readings TO api_user;
+GRANT USAGE, SELECT ON SEQUENCE temperature_readings_id_seq TO api_user;

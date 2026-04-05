@@ -19,7 +19,8 @@ pool.query(`
     temperature NUMERIC(6, 2) NOT NULL,
     timestamp   TIMESTAMPTZ   NOT NULL
   )
-`).then(() => console.log('DB ready'));
+`).then(() => console.log('DB ready'))
+  .catch(err => console.error('DB init warning (table may already exist):', err.message));
 
 // POST /temperature  — store a reading
 app.post('/temperature', async (req, res) => {
