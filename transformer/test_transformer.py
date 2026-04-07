@@ -4,7 +4,9 @@
 # Usage : python -m unittest .\test_transformer.py 
 
 import unittest
+from unittest.mock import patch, MagicMock
 from transformer import convert_voltage_to_temperature
+from app import app
 
 class TestConvertVoltageToTemperature(unittest.TestCase):
 
@@ -48,6 +50,56 @@ class TestConvertVoltageToTemperature(unittest.TestCase):
     def test_over_max_voltage_raises_value_error(self):
         with self.assertRaises(ValueError):
             convert_voltage_to_temperature(5.1)
+
+class TestTransformEndpoint(unittest.TestCase):
+
+    def setUp(self):
+        self.client = app.test_client()
+
+    @patch("app.requests.post")
+    def test_valid_reading_posts_to_api(self, mock_post):
+        mock_post.return_value = MagicMock(status_code=201)
+        response = self.client.post('/transform', json={
+            "sensorId": "s1",
+            "sampledValue": 2.5,
+            "timestamp": "2026-04-07T12:00:00Z"
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data["temperature"], 50.0)
+        self.assertEqual(data["unit"], "Celsius")
+        mock_post.assert_called_once_with(
+            "http://localhost:4000/temperature",
+            json={"temperature": 50.0, "timestamp": "2026-04-07T12:00:00Z"}
+        )
+
+    @patch("app.requests.post")
+    def test_api_failure_does_not_break_response(self, mock_post):
+        mock_post.side_effect = Exception("API down")
+        response = self.client.post('/transform', json={
+            "sensorId": "s1",
+            "sampledValue": 2.5,
+            "timestamp": "2026-04-07T12:00:00Z"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["temperature"], 50.0)
+
+    @patch("app.requests.post")
+    def test_missing_sampled_value_returns_400(self, mock_post):
+        response = self.client.post('/transform', json={"sensorId": "s1"})
+        self.assertEqual(response.status_code, 400)
+        mock_post.assert_not_called()
+
+    @patch("app.requests.post")
+    def test_invalid_voltage_returns_400(self, mock_post):
+        response = self.client.post('/transform', json={
+            "sensorId": "s1",
+            "sampledValue": 99.0,
+            "timestamp": "2026-04-07T12:00:00Z"
+        })
+        self.assertEqual(response.status_code, 400)
+        mock_post.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

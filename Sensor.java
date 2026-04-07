@@ -10,7 +10,9 @@ public class Sensor {
     private static final double MIN_VOLTAGE = 0.0;
     private static final double MAX_VOLTAGE = 5.0;
     private static final int INTERVAL_MS  = 500;
-    private static final String SAMPLER_URL = "http://172.17.0.1:3000/sample";
+    private static final String SAMPLER_URL = System.getenv("SAMPLER_URL") != null
+        ? System.getenv("SAMPLER_URL")
+        : "http://host.docker.internal:3000/sample";
 
     private final Random random = new Random();
     private final HttpClient httpClient = HttpClient.newHttpClient();
