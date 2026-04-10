@@ -77,9 +77,7 @@ jobs:
 
       - name: Run Docker container
         run: |
-          HOST_IP=$(ip route show default | awk '/default/ {print $3}')
-          echo "Host IP: $HOST_IP"
-          docker run --add-host=host.docker.internal:$HOST_IP \
+          docker run --add-host=host.docker.internal:host-gateway \
             -e SAMPLER_URL=http://host.docker.internal:3000/sample \
             java-docker-demo
 
