@@ -6,13 +6,10 @@ This repo is for the completion of MTU CS4770's project where the team will be e
 To Run the entire System local
 
 ## First start the PostgreSQL (Docker)
-docker run -d --name temp_db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres_root \
-  -e POSTGRES_DB=postgres \
-  -v $(pwd)/database/init.sql:/docker-entrypoint-initdb.d/init.sql \
-  -p 5432:5432 \
-  postgres:15-alpine
+docker rm -f temp_db
+
+docker-compose up -d
+
 
 ## Secondly run the REST API server (port 4000)
 cd restAPI
@@ -42,6 +39,7 @@ node server.js
 ## Lastly run  Java Sensor (Docker)
 
 docker build -t java-docker-demo .
+
 
 docker run --add-host=host.docker.internal:host-gateway \
   -e SAMPLER_URL=http://host.docker.internal:3000/sample \
