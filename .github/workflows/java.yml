@@ -69,7 +69,7 @@ jobs:
         working-directory: ./sampler
         run: |
           node server.js &
-          sleep 3
+          timeout 30 bash -c 'until curl -s -o /dev/null http://localhost:3000/sample; do sleep 1; done'
           echo "Sampler started"
 
       - name: Build Docker image
